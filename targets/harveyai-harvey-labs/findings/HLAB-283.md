@@ -8,11 +8,11 @@ defect_class: misstated-rule
 severity: high
 verification_state: primary-source-checked
 duplicate_check: "done 2026-10-07, 2026-10-15 and 2026-10-21 against all issues and pull requests; no duplicate found"
-upstream_issue: none
-filed_on: none
+upstream_issue: https://github.com/harveyai/harvey-labs/pull/201
+filed_on: 2026-10-23
 first_response_on: none
 resolved_on: none
-status: ready-to-file
+status: filed
 ---
 ## Defect
 The task documents and criterion C-006 name the 2021 edition of the ICC Rules of Arbitration. Under Article 6(1) of those Rules the parties are deemed to have submitted "to the Rules in effect on the date of commencement of the arbitration", and the Request for Arbitration in the record was filed on 14 March 2025, before the 2026 Rules entered into force on 1 June 2026, so the 2021 Rules govern the challenge. Criteria C-007, C-010 and C-030 in tasks/arbitration-international-dispute-resolution/draft-challenge-to-arbitrator-appointment/task.json require the submission to refer to a 15-day challenge period under Article 14(2) and to compute a deadline of 19 May 2025, reached by counting 15 days from 5 May 2025 to 20 May 2025 and then moving back one day because 20 May is said to be a non-business day. Article 14(2) of the 2021 Rules makes a challenge admissible if submitted within 30 days from receipt of the notification of the appointment or confirmation, or within 30 days from the date the party was informed of the facts if that is later. Article 3(4) provides that a period ending on an official holiday or non-business day expires at the end of the first following business day, so a deadline is never brought forward. The task documents place the holiday in Zurich or Switzerland ("Whit Tuesday is observed in the canton of Zurich"; "Whit Tuesday in Zurich"; "a Tuesday following Whit Monday, which is a public holiday in Switzerland"). Easter 2025 fell on 20 April, so Ascension was Thursday 29 May, Pentecost Sunday 8 June and Whit Monday 9 June 2025; no Pentecost-derived day falls on 20 May 2025. The Canton of Zurich's nine statutory holidays include Auffahrt and Pfingstmontag and no Whit Tuesday, and none of them fell on 20 May 2025. On the task's own dates the 30 day period ends on 28 May 2025 if the notification of the 28 April 2025 appointment was received that day, on 4 June 2025 if counted from circulation of the Disclosure Statement on 5 May 2025, and between 6 June and 11 June 2025 if counted from the discovery of each undisclosed fact (7 to 12 May 2025); the planned filing on 19 May 2025 is in time on every count. A submission that states the period correctly fails C-007 and C-030 and does not match C-010, and because every criterion must be met it receives no credit.

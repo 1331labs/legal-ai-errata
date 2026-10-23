@@ -8,11 +8,11 @@ defect_class: misstated-rule
 severity: high
 verification_state: primary-source-checked
 duplicate_check: "done 2026-10-07, 2026-10-15 and 2026-10-21 against all issues and pull requests; no duplicate found"
-upstream_issue: none
-filed_on: none
+upstream_issue: https://github.com/harveyai/harvey-labs/pull/200
+filed_on: 2026-10-23
 first_response_on: none
 resolved_on: none
-status: ready-to-file
+status: filed
 ---
 ## Defect
 Criterion C-028 in tasks/capital-markets/extract-key-terms-from-section-16-filings/task.json (title line 237, text line 241) credits the report only if it treats the Form 5 reporting of Kuznetsov's October 8, 2024 gift as a delinquent filing and fails a report that does not identify late reporting. The transaction is an acquisition of 2,500 shares by bona fide gift from a family member. Under 17 CFR 240.16a-3(g)(1) a Form 4 is required for dispositions by bona fide gift; under 240.16a-3(f)(1) other transactions exempt from section 16(b) are reported on Form 5 within 45 days after the issuer's fiscal year end, and 240.16b-5 exempts both the acquisition and the disposition of securities by bona fide gift. The issuer's fiscal year ended December 31, 2024, so the Form 5 was due February 14, 2025, the day it was filed. A report that applies the rule correctly fails C-028 and, because every criterion must be met, the task.

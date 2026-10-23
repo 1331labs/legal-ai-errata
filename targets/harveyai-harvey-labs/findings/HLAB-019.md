@@ -8,11 +8,11 @@ defect_class: misstated-rule
 severity: high
 verification_state: primary-source-checked
 duplicate_check: "done 2026-10-07, 2026-10-15 and 2026-10-21 against all issues and pull requests; no duplicate found"
-upstream_issue: none
-filed_on: none
+upstream_issue: https://github.com/harveyai/harvey-labs/pull/199
+filed_on: 2026-10-23
 first_response_on: none
 resolved_on: none
-status: ready-to-file
+status: filed
 ---
 ## Defect
 The task instructs the solver to draft a petition "complying with Rules 32 and 34", and the petition is the only deliverable. Criterion C-006 in tasks/tax/draft-tax-court-petition/task.json (title line 60, text line 64) credits the petition only if it sets out the employer identification number and fails it if the number is omitted. Rule 34(b)(1) lists the required contents of a deficiency petition in items (A) to (K) and none of them is a taxpayer identification number. Rule 27(a)(1) requires a filer to refrain from including, or to redact, taxpayer identification numbers, expressly including employer identification numbers, and Rule 20(b) requires the number to be submitted with the petition on a separate Statement of Taxpayer Identification Number (Form 4). A petition drafted to the Court's rules therefore fails C-006, and because the task is scored only when every criterion is met it receives no credit.

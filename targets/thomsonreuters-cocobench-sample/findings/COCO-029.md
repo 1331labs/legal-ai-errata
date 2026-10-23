@@ -8,11 +8,11 @@ defect_class: rubric-vs-source
 severity: low
 verification_state: primary-source-checked
 duplicate_check: "done 2026-10-07, 2026-10-15 and 2026-10-21: tracker holds no issues or pull requests; no duplicate found"
-upstream_issue: none
-filed_on: none
+upstream_issue: https://github.com/thomsonreuters/cocobench-sample/issues/1
+filed_on: 2026-10-23
 first_response_on: none
 resolved_on: none
-status: ready-to-file
+status: filed
 ---
 ## Defect
 1. Period in Request 46. For Request for Production No. 46 the ideal answer gives the period for corporate organizational charts as "2001-2011". The request in the task's source document asks for charts "for the period 2014 to the present". The period in the ideal answer appears nowhere in the task documents as a period and predates both the defined Relevant Time Period (from January 1, 2014) and the vehicles in issue (model year 2016 to present).

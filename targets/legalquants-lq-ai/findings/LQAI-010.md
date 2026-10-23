@@ -8,11 +8,11 @@ defect_class: missing-required-element
 severity: high
 verification_state: primary-source-checked
 duplicate_check: "done 2026-10-07, 2026-10-15 and 2026-10-21 against all issues and pull requests; no duplicate found"
-upstream_issue: none
-filed_on: none
+upstream_issue: https://github.com/LegalQuants/lq-ai/issues/758
+filed_on: 2026-10-23
 first_response_on: none
 resolved_on: none
-status: ready-to-file
+status: filed
 ---
 ## Defect
 The HIPAA reference file for the DPA checklist skill lists twelve required business associate agreement terms. Item 10 (books and records) gives its source as 45 CFR 164.504(e)(2)(ii)(H); that term is paragraph (I). Item 11 (return or destruction) cites (I) and (J); that term is (J) alone. The actual paragraph (H), which requires a business associate that carries out a covered entity's Privacy Rule obligation to comply with the requirements that apply to the covered entity, is not a checklist item. The file says the Security Rule adds requirements at 164.314(a)(2) and cites paragraphs (A) and (B) of 164.314(a)(2)(i), but not (C), under which the contract must provide that the business associate will report any security incident of which it becomes aware. A security incident includes attempted as well as successful unauthorised access, so items 4 (unauthorised uses and disclosures) and 5 (breach notification) do not cover it. SKILL.md line 98 describes the HIPAA terms as those listed in 164.504(e)(2) plus the HITECH and Omnibus Rule additions and does not name 164.314(a)(2)(i). Item 1 (permitted uses and disclosures) cites §164.504(e)(2)(i)(A), which is the permission for the business associate's management and administration, for the term that §164.504(e)(2)(i) itself states.

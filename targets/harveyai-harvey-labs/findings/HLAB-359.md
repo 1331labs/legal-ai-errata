@@ -8,11 +8,11 @@ defect_class: misstated-rule
 severity: high
 verification_state: primary-source-checked
 duplicate_check: "done 2026-10-07, 2026-10-15 and 2026-10-21 against all issues and pull requests; no duplicate found"
-upstream_issue: none
-filed_on: none
+upstream_issue: https://github.com/harveyai/harvey-labs/pull/202
+filed_on: 2026-10-23
 first_response_on: none
 resolved_on: none
-status: ready-to-file
+status: filed
 ---
 ## Defect
 Criterion C-041 in tasks/international-trade-sanctions/draft-export-license-application/task.json (title line 346, text line 350) credits the draft application narrative only if it cites Singapore's Country Group A:1 status as a favorable factor and fails a narrative that does not refer to A:1. In the Country Group A table of Supplement No. 1 to Part 740 of the Export Administration Regulations the Singapore row carries a single mark, in column A:6, both as of April 1, 2025 (the screening memo in the task is dated April 1, 2025) and in the current text; Singapore also appears in the Country Group B list. Footnote 1 to the table describes Country Group A:1 as the list of Wassenaar Arrangement Participating States, except for Malta, Russia and Ukraine. The deliverable is a narrative for filing with the Bureau of Industry and Security: a narrative that satisfies C-041 misstates the regulation to the agency, and an accurate narrative fails the criterion and, because every criterion must be met, the task.

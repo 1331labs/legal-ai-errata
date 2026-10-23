@@ -8,11 +8,11 @@ defect_class: misstated-rule
 severity: high
 verification_state: primary-source-checked
 duplicate_check: "done 2026-10-07, 2026-10-15 and 2026-10-21 against all issues and pull requests; no duplicate found"
-upstream_issue: none
-filed_on: none
+upstream_issue: https://github.com/harveyai/harvey-labs/pull/198
+filed_on: 2026-10-23
 first_response_on: none
 resolved_on: none
-status: ready-to-file
+status: filed
 ---
 ## Defect
 Criterion C-022 in tasks/emerging-companies-venture-capital/draft-legal-opinion-for-series-b-preferred-stock-financing/task.json requires the solver to contrast the bylaws' quorum of a majority of the authorized number of directors (3 of 5) with what it calls the DGCL section 141(b) default of a majority of the total number of directors then in office (3 of 4 sitting directors), and to discuss the difference. C-024 requires a note that the statutory default is a majority of directors then in office, C-023 requires confirmation that quorum was met under either standard, and C-060 says the bylaws' wording may differ from the statutory default. Section 141(b) provides that a majority of the total number of directors constitutes a quorum; the words then in office do not appear in section 141(b), and the Court of Chancery, quoting the Delaware Supreme Court, has stated that total number of directors refers to directorships, not directors actually in office. The bylaws' wording therefore tracks the statutory default. An opinion that states the law correctly (quorum is 3 of 5 authorized seats under both the statute and the bylaws, and 3 directors attended) fails C-022 for not raising the supposed discrepancy, and because every criterion must be met it loses the task; C-024's PASS clause also asks it to note a "then in office" default that section 141(b) does not state.
