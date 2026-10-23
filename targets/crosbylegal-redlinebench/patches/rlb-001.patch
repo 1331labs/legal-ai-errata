@@ -1,5 +1,5 @@
 diff --git a/skills/contract-redliner/scripts/redline_engine/document.py b/skills/contract-redliner/scripts/redline_engine/document.py
-index 050aba4..303aff3 100644
+index 050aba4..208cbac 100644
 --- a/skills/contract-redliner/scripts/redline_engine/document.py
 +++ b/skills/contract-redliner/scripts/redline_engine/document.py
 @@ -85,7 +85,7 @@ class DocumentView:
@@ -11,7 +11,17 @@ index 050aba4..303aff3 100644
              pid = _PARAGRAPH_ID_FMT.format(i)
              info = ParagraphInfo(
                  id=pid,
-@@ -128,6 +128,11 @@ class DocumentView:
+@@ -93,7 +93,8 @@ class DocumentView:
+                 text=p.text,
+                 style=p.style.name if p.style else "",
+                 is_empty=not p.text.strip(),
+-                has_revisions=_paragraph_has_revisions(p),
++                has_revisions=_paragraph_has_revisions(p)
++                or _row_revision(p) is not None,
+                 has_comments=_paragraph_has_comments(p),
+                 list_level=_paragraph_list_level(p),
+             )
+@@ -128,6 +129,11 @@ class DocumentView:
          Blank paragraphs are omitted from the visible output but their IDs are
          preserved (skipped) so paragraph IDs match the underlying document.
  
@@ -23,7 +33,7 @@ index 050aba4..303aff3 100644
          If `max_chars` is set, truncates with a sentinel — useful for prompt
          budgeting. The LargeCo template is ~90 KB; most current frontier models
          comfortably fit the whole thing, but smaller models or budget runs may
-@@ -135,7 +140,8 @@ class DocumentView:
+@@ -135,7 +141,8 @@ class DocumentView:
          """
          lines: list[str] = [f"# {self.docx_path.name}", ""]
          for p in self.paragraphs:
@@ -33,7 +43,7 @@ index 050aba4..303aff3 100644
                  continue
              flags = []
              if p.has_revisions:
-@@ -144,7 +150,7 @@ class DocumentView:
+@@ -144,7 +151,7 @@ class DocumentView:
                  flags.append("CMTS")
              flag_str = f" {{{','.join(flags)}}}" if flags else ""
              indent = "  " * (p.list_level or 0)
@@ -42,14 +52,23 @@ index 050aba4..303aff3 100644
  
          if self.comments:
              lines.append("")
-@@ -170,10 +176,18 @@ class DocumentView:
+@@ -170,10 +177,27 @@ class DocumentView:
              out = out[: max_chars - 100] + "\n\n[... document truncated ...]"
          return out
  
 +    def _body_text(self, p: ParagraphInfo) -> str:
 +        """Text `to_markdown` lists for `p`, with tracked changes inline."""
 +        if p.has_revisions:
-+            return _render_with_revisions(self._paragraph_objects[p.id]._p)
++            p_obj = self._paragraph_objects[p.id]
++            row_mark = _row_revision(p_obj)
++            if row_mark is not None and not _paragraph_has_revisions(p_obj):
++                deleted = etree.QName(row_mark).localname == "del"
++                text = _row_paragraph_text(p_obj._p, deleted)
++                if not text:
++                    return ""
++                marker = "~~" if deleted else "++"
++                return f"{marker}{text}{marker}"
++            return _render_with_revisions(p_obj._p)
 +        return p.text
 +
      def stats(self) -> dict[str, int]:
@@ -62,7 +81,7 @@ index 050aba4..303aff3 100644
              "existing_comments": len(self.comments),
              "existing_revisions": len(self.revisions),
          }
-@@ -182,6 +196,22 @@ class DocumentView:
+@@ -182,6 +206,22 @@ class DocumentView:
  # --- Paragraph metadata helpers -------------------------------------------- #
  
  
@@ -85,10 +104,47 @@ index 050aba4..303aff3 100644
  def _paragraph_has_revisions(p: Paragraph) -> bool:
      for tag in ("w:ins", "w:del", "w:moveFrom", "w:moveTo"):
          if next(p._p.iter(qn(tag)), None) is not None:
-@@ -189,6 +219,55 @@ def _paragraph_has_revisions(p: Paragraph) -> bool:
+@@ -189,6 +229,92 @@ def _paragraph_has_revisions(p: Paragraph) -> bool:
      return False
  
  
++def _row_revision(p: Paragraph) -> etree._Element | None:
++    """Return the `w:ins` or `w:del` mark of a table row that contains `p`.
++
++    Word records an inserted or deleted table row in the row properties
++    (`w:tr/w:trPr/w:ins` or `w:trPr/w:del`). The text in that row need not
++    carry a run-level mark of its own, so without this check a deleted row
++    would be listed as live text. A paragraph in such a row that has no
++    run-level mark is shown wrapped in full; one that has run-level marks is
++    rendered from them, as in any other paragraph. Rows of enclosing tables
++    are checked too.
++    """
++    for anc in p._p.iterancestors(qn("w:tr")):
++        tr_pr = anc.find(qn("w:trPr"))
++        if tr_pr is None:
++            continue
++        for tag in ("w:del", "w:ins"):
++            mark = tr_pr.find(qn(tag))
++            if mark is not None:
++                return mark
++    return None
++
++
++def _row_paragraph_text(p_el: etree._Element, deleted: bool) -> str:
++    """Text of a paragraph in an inserted or deleted row.
++
++    For a deleted row, all text (including `w:delText`) is returned. For an
++    inserted row, text inside run-level deletions is left out.
++    """
++    parts: list[str] = []
++    skip = (qn("w:del"), qn("w:moveFrom"))
++    for r in p_el.iter(qn("w:r")):
++        if not deleted and any(a.tag in skip for a in r.iterancestors()):
++            continue
++        parts.append(_run_text(r))
++    return "".join(parts)
++
++
 +def _render_with_revisions(el: etree._Element) -> str:
 +    """Return the text of `el` with tracked changes marked inline.
 +
@@ -141,3 +197,40 @@ index 050aba4..303aff3 100644
  def _paragraph_has_comments(p: Paragraph) -> bool:
      for tag in ("w:commentRangeStart", "w:commentRangeEnd", "w:commentReference"):
          if next(p._p.iter(qn(tag)), None) is not None:
+@@ -381,4 +507,36 @@ def _enumerate_revisions(
+                         paragraph_ids=[pi.id],
+                     )
+                 )
++    # Row-level insertions and deletions (`w:trPr/w:ins`, `w:trPr/w:del`),
++    # listed once per row with the text of every paragraph in the row.
++    row_revisions: dict[int, ExistingRevision] = {}
++    for pi in paragraphs:
++        p = paragraph_objects[pi.id]
++        mark = _row_revision(p)
++        if mark is None:
++            continue
++        try:
++            rid = int(mark.get(qn("w:id")))
++        except (TypeError, ValueError):
++            continue
++        deleted = etree.QName(mark).localname == "del"
++        text = _row_paragraph_text(p._p, deleted)
++        rev = row_revisions.get(rid)
++        if rev is None:
++            if rid in seen_ids:
++                continue
++            seen_ids.add(rid)
++            rev = ExistingRevision(
++                id=rid,
++                type=etree.QName(mark).localname,
++                author=mark.get(qn("w:author"), ""),
++                text=text,
++                paragraph_ids=[pi.id],
++            )
++            row_revisions[rid] = rev
++            out.append(rev)
++        else:
++            if text:
++                rev.text = f"{rev.text} | {text}" if rev.text else text
++            rev.paragraph_ids.append(pi.id)
+     return out

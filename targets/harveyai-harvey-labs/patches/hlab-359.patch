@@ -1,8 +1,8 @@
 diff --git a/CHANGELOG.md b/CHANGELOG.md
-index 314124622..287c166b0 100644
+index 314124622..4c96a7b3e 100644
 --- a/CHANGELOG.md
 +++ b/CHANGELOG.md
-@@ -54,6 +54,55 @@ maps any entry to the merge commit that introduced it.
+@@ -54,6 +54,56 @@ maps any entry to the merge commit that introduced it.
  
  # Changes
  
@@ -48,9 +48,10 @@ index 314124622..287c166b0 100644
 +or end-user provision requires a license fails C-009, and a narrative that does
 +so fails C-034. Deliverables that classify the module under 6A003.b.4.a, that
 +treat MT as inapplicable, or that state the four-year validity period are no
-+longer failed on C-026, C-027, C-032, C-045 or C-023 for that reason, and a
-+deliverable that cites 6A002.a.3 without flagging 6A003.b.4.a fails C-026 and
-+C-045. A memorandum that concludes that no license exception is available
++longer failed on C-026, C-027, C-032, C-045 or C-023 for that reason. A
++narrative that cites 6A002.a.3 without flagging 6A003.b.4.a fails C-026, and
++fails C-045 if the issues memorandum does not cite or flag 6A003.b.4.a either.
++A memorandum that concludes that no license exception is available
 +because 744.9(e) permits none other than GOV is no longer exposed to failure on
 +C-025 for not addressing STA, GOV, TMP or RPL. Results for this task are not
 +comparable across this line; all other tasks are unchanged.
