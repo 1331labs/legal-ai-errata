@@ -1,0 +1,247 @@
+diff --git a/skills/dpa-checklist-review/SKILL.md b/skills/dpa-checklist-review/SKILL.md
+index 5e20a34..a273490 100644
+--- a/skills/dpa-checklist-review/SKILL.md
++++ b/skills/dpa-checklist-review/SKILL.md
+@@ -3,7 +3,7 @@ name: dpa-checklist-review
+ description: Use when the user provides a Data Processing Agreement, Data Processing Addendum, or HIPAA Business Associate Agreement and asks whether it contains the terms required under the applicable data-protection regime. Produces a structured checklist scoring each required term as present, partial, missing, or unclear, with clause references and recommended language for any gaps. Supports GDPR Article 28, US state privacy laws (CCPA/CPRA, VCDPA, CPA, CTDPA, and similar), HIPAA BAAs, and general commercial DPAs without a specified regime.
+ lq_ai:
+   title: DPA Checklist Review
+-  version: 1.0.0
++  version: 1.1.0
+   author: LegalQuants
+   tags: [contracts, dpa, privacy, gdpr, ccpa, hipaa, compliance, review]
+   jurisdiction: regime-dependent
+@@ -20,7 +20,7 @@ lq_ai:
+         description: The DPA, DPA-equivalent addendum, or BAA to review (PDF, DOCX, or pasted text).
+       - name: regulatory_regime
+         type: text
+-        description: Which regulatory regime governs this review. One of "gdpr" (EU/UK GDPR Article 28; covers any DPA processing EU/UK personal data), "us_state_privacy" (CCPA/CPRA, VCDPA, CPA, CTDPA, UCPA, OCPA, and similar US state privacy laws), "hipaa_baa" (HIPAA Business Associate Agreement; protected health information under US healthcare law), or "general_commercial" (DPA without a specific regime stated; checks for commercially-standard DPA terms). If not provided, ask which regime applies before proceeding — do not guess.
++        description: Which regulatory regime governs this review. One of "gdpr" (EU/UK GDPR Article 28; covers any DPA for processing to which the EU or UK GDPR applies under its Article 3), "us_state_privacy" (CCPA/CPRA, VCDPA, CPA, CTDPA, UCPA, OCPA, and similar US state privacy laws), "hipaa_baa" (HIPAA Business Associate Agreement; protected health information under US healthcare law), or "general_commercial" (DPA without a specific regime stated; checks for commercially-standard DPA terms). If not provided, ask which regime applies before proceeding — do not guess.
+     optional:
+       - name: party_role
+         type: text
+@@ -59,18 +59,18 @@ The skill requires the document and the regulatory regime. If regime is not prov
+ 
+ > "Before I review, which regulatory regime should I check this DPA against?
+ >
+-> - **GDPR** (EU/UK GDPR Article 28; covers any DPA processing EU/UK personal data)
++> - **GDPR** (EU/UK GDPR Article 28; covers any DPA for processing to which the EU or UK GDPR applies under its Article 3)
+ > - **US state privacy** (CCPA/CPRA, Virginia VCDPA, Colorado CPA, Connecticut CTDPA, Utah UCPA, Oregon OCPA, and similar)
+ > - **HIPAA BAA** (Business Associate Agreement under US healthcare law)
+ > - **General commercial** (DPA without a specific regime; checks commercially-standard DPA terms)
+ >
+ > If multiple regimes apply, pick the most prescriptive (typically GDPR) for the primary review; we can run additional reviews for other regimes after."
+ 
+-Do not guess the regime from document title or governing law. A document titled "Data Processing Addendum" with Delaware governing law could be GDPR-driven (because it processes EU resident data), CCPA-driven (because it processes California resident data), or both. Only the user knows what data is in scope.
++Do not guess the regime from document title or governing law. A document titled "Data Processing Addendum" with Delaware governing law could be GDPR-driven (because the processing falls within Article 3 of the EU or UK GDPR), CCPA-driven (because it processes California resident data), or both. Only the user knows what data is in scope.
+ 
+ Optional inputs (`party_role`, `data_categories`, `international_transfer_context`, `standard_positions`) refine the analysis. The `party_role` input materially changes severity calibration:
+ 
+-- **Controllers / data exporters / businesses / covered entities** want strong, specific processor obligations — they bear regulatory liability for processor failures.
++- **Controllers / data exporters / businesses / covered entities** want strong, specific processor obligations — they can bear regulatory liability for processor failures.
+ - **Processors / data importers / service providers / business associates** want clear, operationally feasible scope — vague obligations create open-ended liability.
+ 
+ When `party_role` is not provided, default to **controller perspective** (regulators almost always investigate the controller, so controller-favorable analysis is the safer default for reviews) and note the assumption in the report. Ask the user to re-run if they are on the processor side.
+@@ -93,9 +93,9 @@ Before substantive review:
+ 
+ Walk through the requirements for the specified regime using the corresponding reference file:
+ 
+-- For `gdpr`: use `reference/gdpr_requirements.md`. The required terms are the nine items in GDPR Article 28(3) plus security obligations under Article 32 plus (when applicable) international-transfer mechanisms.
++- For `gdpr`: use `reference/gdpr_requirements.md`. The required terms are the terms in the opening words of GDPR Article 28(3) (subject matter and duration, nature and purpose, type of personal data and categories of data subjects, and the controller's obligations and rights) and the items in Article 28(3)(a) to (h), plus security obligations under Article 32 plus (when applicable) international-transfer mechanisms.
+ - For `us_state_privacy`: use `reference/us_state_privacy_requirements.md`. The required terms are the convergent set across CCPA/CPRA, VCDPA, CPA, CTDPA, and similar laws; differences between laws are noted where material.
+-- For `hipaa_baa`: use `reference/hipaa_baa_requirements.md`. The required terms are those listed in 45 CFR §164.504(e)(2) plus the additional requirements under HITECH and the HIPAA Omnibus Rule.
++- For `hipaa_baa`: use `reference/hipaa_baa_requirements.md`. The required terms are those listed in 45 CFR §164.504(e)(2) and §164.314(a)(2)(i) plus the additional requirements under HITECH and the HIPAA Omnibus Rule.
+ - For `general_commercial`: use `reference/general_commercial_requirements.md`. The expected terms are commercially-standard DPA terms in the absence of a specific regime — broadly compatible with any of GDPR, US state privacy, or HIPAA but not optimized for any.
+ 
+ For each required term, classify:
+@@ -169,7 +169,7 @@ The checklist table is the centerpiece. Detailed findings only cover non-Present
+ ## Edge cases and refusals
+ 
+ - **Document is not a DPA/BAA.** Stop and tell the user. Common adjacent documents that get confused for DPAs: privacy policies, security questionnaires, data sharing agreements (different instrument under GDPR), data licensing agreements, MSAs with privacy clauses but no DPA addendum.
+-- **Regime is gdpr but the document does not contain SCCs or another transfer mechanism, and `international_transfer_context` indicates transfers occur.** Critical gap; flag in posture and detailed findings even if the controller-processor terms are otherwise compliant.
++- **Regime is gdpr, `international_transfer_context` indicates transfers to a third country or international organisation, and a transfer subject to the EU GDPR or to the UK GDPR has no route under that Regulation: for the EU GDPR, it is not covered by an adequacy decision in force under its Article 45; for the UK GDPR, it is not approved, or treated as approved, by regulations under its Article 45A; and for either, the document does not contain SCCs or another safeguard under that Regulation's Article 46 for it, and no derogation under that Regulation's Article 49 applies to it.** Critical gap; flag in posture and detailed findings even if the controller-processor terms are otherwise compliant.
+ - **Regime is hipaa_baa but the document does not invoke HIPAA at all** (no reference to PHI, BAA, 164.504, etc.). The document may not actually be a BAA. Flag and ask the user to confirm.
+ - **Document is a DPA from before significant regime changes** (e.g., a GDPR DPA dated 2018 without Schrems II / 2021 SCC updates; a CCPA DPA dated 2020 without CPRA amendments). Flag in posture and note the regulatory drift.
+ - **Document includes terms for multiple regimes.** Some DPAs are written to satisfy GDPR + CCPA + others simultaneously. Review against the requested regime and note where multi-regime drafting creates ambiguity (e.g., conflicting deletion timelines).
+@@ -181,7 +181,7 @@ The checklist table is the centerpiece. Detailed findings only cover non-Present
+ - Predict regulator behavior. Flags gaps; does not opine on enforcement risk.
+ - Negotiate. Suggests language; does not draft side letters.
+ - Replace a privacy impact assessment, transfer impact assessment, or other formal compliance artifact. Those are separate processes.
+-- Cover non-US/non-EU regimes (Canada PIPEDA, Brazil LGPD, China PIPL, etc.) in v1.0.0. The structure supports adding regime-specific reference files; community contributions welcomed.
++- Cover non-US regimes other than the EU and UK GDPR (Canada PIPEDA, Brazil LGPD, China PIPL, etc.) in this version. The structure supports adding regime-specific reference files; community contributions welcomed.
+ 
+ ## Reference materials
+ 
+diff --git a/skills/dpa-checklist-review/reference/hipaa_baa_requirements.md b/skills/dpa-checklist-review/reference/hipaa_baa_requirements.md
+index 2fef7bb..680fba6 100644
+--- a/skills/dpa-checklist-review/reference/hipaa_baa_requirements.md
++++ b/skills/dpa-checklist-review/reference/hipaa_baa_requirements.md
+@@ -6,9 +6,9 @@ This reference catalogs the contractual terms required in a HIPAA Business Assoc
+ 
+ A Business Associate Agreement is required when a covered entity (or another business associate) discloses Protected Health Information (PHI) to a business associate. Threshold questions:
+ 
+-- **Is the data PHI?** PHI is individually identifiable health information held or transmitted by a covered entity or business associate, in any form. If the data is health information about an identifiable individual that relates to past, present, or future physical or mental health, healthcare provision, or healthcare payment, it is PHI.
+-- **Is the recipient a business associate?** A business associate is a person or entity that performs functions or activities on behalf of, or provides services to, a covered entity that involve access to PHI. Cloud service providers, billing services, IT vendors, claims processing services, document management vendors, and many others.
+-- **Is the discloser a covered entity or another business associate?** Covered entities are: health plans, health care clearinghouses, and most healthcare providers. Business associates can engage subcontractors via subcontractor BAAs (which substantially mirror primary BAAs).
++- **Is the data PHI?** PHI is individually identifiable health information held or transmitted by a covered entity or business associate, in any form. If the data is health information about an identifiable individual that relates to past, present, or future physical or mental health or condition, healthcare provision, or healthcare payment, and it was created or received by a health care provider, health plan, employer, or health care clearinghouse, it is PHI unless it is in an education record covered by FERPA (or a record described at 20 U.S.C. 1232g(a)(4)(B)(iv)), in an employment record held by a covered entity in its role as employer, or about a person who has been deceased for more than 50 years (45 CFR §160.103).
++- **Is the recipient a business associate?** A business associate is a person or entity that, other than as a member of the covered entity's workforce, creates, receives, maintains, or transmits PHI on behalf of a covered entity for a function or activity regulated by HIPAA, or provides legal, actuarial, accounting, consulting, data aggregation, management, administrative, accreditation, or financial services to a covered entity where the service involves the disclosure of PHI to it; the definition also covers subcontractors of business associates and certain data transmission and personal health record vendors, and excludes, among others, a health care provider receiving PHI for treatment (45 CFR §160.103). Cloud service providers, billing services, IT vendors, claims processing services, document management vendors, and many others.
++- **Is the discloser a covered entity or another business associate?** Covered entities are: health plans, health care clearinghouses, and health care providers that transmit any health information in electronic form in connection with a HIPAA transaction, such as an electronic claim (45 CFR §160.103). Business associates can engage subcontractors via subcontractor BAAs (which substantially mirror primary BAAs).
+ 
+ If the data is not PHI, this skill does not apply — recommend the user use the appropriate skill (general DPA, GDPR, US state privacy) instead.
+ 
+@@ -20,7 +20,7 @@ The HIPAA Privacy Rule prescribes specific contract terms for BAAs at 45 CFR §1
+ 
+ ### 1. Permitted uses and disclosures
+ 
+-**Source:** 45 CFR §164.504(e)(2)(i)(A).
++**Source:** 45 CFR §164.504(e)(2)(i); management and administration and data aggregation at §164.504(e)(2)(i)(A) and (B).
+ 
+ **Required:** The BAA must establish the permitted and required uses and disclosures of PHI by the business associate. Uses and disclosures are limited to those necessary to perform the services for the covered entity, plus a small set of additional purposes permitted by HIPAA (e.g., management and administration of the business associate, data aggregation for the covered entity).
+ 
+@@ -45,7 +45,7 @@ The HIPAA Privacy Rule prescribes specific contract terms for BAAs at 45 CFR §1
+ 
+ **Common deficiencies:**
+ - Carve-outs for processor "legitimate business purposes" not authorized by HIPAA.
+-- No reference to "as required by law" — required by the regulation.
++- No carve-out for uses and disclosures "as required by law": not narrower than 45 CFR §164.504(e)(2)(ii)(A) requires, because the clause is stricter than the regulation, but a use or disclosure that law compels, which 45 CFR §164.502(a)(3) permits and §164.502(a)(4)(i) can require, then falls outside what the BAA allows.
+ 
+ ### 3. Safeguards
+ 
+@@ -65,23 +65,25 @@ The HIPAA Privacy Rule prescribes specific contract terms for BAAs at 45 CFR §1
+ 
+ ### 4. Reporting of unauthorized uses or disclosures
+ 
+-**Source:** 45 CFR §164.504(e)(2)(ii)(C).
++**Source:** 45 CFR §164.504(e)(2)(ii)(C); §164.314(a)(2)(i)(C) (security incidents).
+ 
+-**Required:** Business associate must report to the covered entity any use or disclosure of PHI not provided for by the BAA of which it becomes aware.
++**Required:** Business associate must report to the covered entity any use or disclosure of PHI not provided for by the BAA of which it becomes aware. Under the Security Rule, where the business associate creates, receives, maintains, or transmits electronic PHI, the BAA must also provide that the business associate will report any security incident of which it becomes aware, including breaches of unsecured PHI under §164.410.
+ 
+ **Compliant pattern:**
+ > "Business Associate shall report to Covered Entity any use or disclosure of PHI not provided for by this Agreement of which it becomes aware, without unreasonable delay and in any event within [N] days of discovery."
+ 
++> "Business Associate shall report to Covered Entity any security incident of which it becomes aware, including breaches of unsecured PHI as required by 45 CFR §164.410."
++
+ **Common deficiencies:**
+ - "Without unreasonable delay" with no specific timeline.
+ - Limited to "material" or "significant" violations — the regulation requires reporting all unauthorized uses/disclosures.
+-- Limited to violations the business associate "knows or should know" — the regulation requires reporting on awareness.
++- No security incident reporting term, or reporting limited to breaches with no agreed treatment of other security incidents.
+ 
+ ### 5. Breach notification
+ 
+ **Source:** 45 CFR §164.410 (subpart breach notification rules added by HITECH).
+ 
+-**Required:** Business associate must notify covered entity of breaches of unsecured PHI without unreasonable delay and in no case later than 60 calendar days after discovery. Notification must include identification of each individual whose unsecured PHI has been (or is reasonably believed to have been) accessed, acquired, used, or disclosed during the breach.
++**Required:** Business associate must notify covered entity of breaches of unsecured PHI without unreasonable delay and in no case later than 60 calendar days after discovery. Notification must include, to the extent possible, identification of each individual whose unsecured PHI has been (or is reasonably believed to have been) accessed, acquired, used, or disclosed during the breach.
+ 
+ **Compliant pattern:**
+ - Specific timeline (typically 30 days or less, to allow covered entity to meet its 60-day individual-notification obligation).
+@@ -89,8 +91,8 @@ The HIPAA Privacy Rule prescribes specific contract terms for BAAs at 45 CFR §1
+ - Cooperation with covered entity's breach response.
+ 
+ **Common deficiencies:**
+-- "Without unreasonable delay" with no specific timeline — covered entity has 60 days from BA's discovery; BA delay of more than ~30 days makes timely individual notice impossible.
+-- Notification only of "material" breaches — non-compliant; HIPAA breach notification covers all breaches above the de minimis exception (low-probability-of-compromise risk assessment).
++- "Without unreasonable delay" with no specific timeline. Where the business associate is the covered entity's agent, its discovery is imputed to the covered entity (45 CFR §164.404(a)(2)), so the covered entity's 60 days run from the business associate's discovery and every day of business associate delay shortens them; where it is not an agent, they run from the covered entity's own discovery, ordinarily the business associate's notice.
++- Notification only of "material" breaches: non-compliant. Every breach of unsecured PHI must be reported to the covered entity (45 CFR §164.410(a)), and under 45 CFR §164.402 an acquisition, access, use, or disclosure of PHI not permitted by the Privacy Rule is presumed to be a breach unless one of the three exclusions in the definition applies or a risk assessment of at least the four listed factors demonstrates a low probability that the PHI has been compromised.
+ - No commitment to provide breach details necessary for the covered entity's notifications.
+ 
+ ### 6. Sub-business-associate flow-down
+@@ -106,7 +108,7 @@ The HIPAA Privacy Rule prescribes specific contract terms for BAAs at 45 CFR §1
+ 
+ **Common deficiencies:**
+ - "Reasonable efforts" to flow down — non-compliant; the regulation requires actual flow-down.
+-- Disclaimer of liability for subcontractor performance — inconsistent with HIPAA's direct liability framework.
++- Disclaimer of liability for subcontractor performance: leaves the covered entity without a contractual remedy for subcontractor failures; it does not limit the business associate's liability for a civil money penalty based on the act or omission of a subcontractor acting as its agent (45 CFR §160.402(c)(2)).
+ - No subcontractor list or notification mechanism.
+ 
+ ### 7. Access by individuals
+@@ -147,11 +149,21 @@ The HIPAA Privacy Rule prescribes specific contract terms for BAAs at 45 CFR §1
+ - Missing entirely.
+ - Limited to specific disclosure types — accounting requirements cover most non-treatment/payment/operations disclosures.
+ 
+-### 10. Internal practices, books, and records
++### 9A. Carrying out covered entity obligations
+ 
+ **Source:** 45 CFR §164.504(e)(2)(ii)(H).
+ 
+-**Required:** Business associate must make its internal practices, books, and records relating to the use and disclosure of PHI available to the Secretary of Health and Human Services for purposes of determining the covered entity's compliance with HIPAA.
++**Required:** To the extent the business associate is to carry out a covered entity's obligation under the Privacy Rule, it must comply with the Privacy Rule requirements that apply to the covered entity in performing that obligation. Mark N/A where the business associate carries out no covered entity obligation.
++
++**Common deficiencies:**
++- Missing entirely.
++- Delegation of notice, access, or accounting functions with no matching covenant.
++
++### 10. Internal practices, books, and records
++
++**Source:** 45 CFR §164.504(e)(2)(ii)(I).
++
++**Required:** Business associate must make its internal practices, books, and records relating to the use and disclosure of PHI available to the Secretary of Health and Human Services for purposes of determining the covered entity's compliance with the Privacy Rule.
+ 
+ **Compliant pattern:**
+ > "Business Associate shall make its internal practices, books, and records relating to the use and disclosure of PHI received from, or created or received by Business Associate on behalf of, Covered Entity available to the Secretary of Health and Human Services upon request for purposes of the Secretary determining Covered Entity's compliance with the Privacy Rule."
+@@ -162,13 +174,13 @@ The HIPAA Privacy Rule prescribes specific contract terms for BAAs at 45 CFR §1
+ 
+ ### 11. Return or destruction of PHI at termination
+ 
+-**Source:** 45 CFR §164.504(e)(2)(ii)(I) and §164.504(e)(2)(ii)(J).
++**Source:** 45 CFR §164.504(e)(2)(ii)(J).
+ 
+-**Required:** At termination of the BAA, if feasible, return or destroy all PHI received from, created, or received by the business associate on behalf of the covered entity. If return/destruction is not feasible, extend protections to the PHI and limit further uses and disclosures.
++**Required:** At termination of the BAA, if feasible, return or destroy all PHI received from, or created or received by the business associate on behalf of, the covered entity that the business associate still maintains in any form, and retain no copies. If return or destruction is not feasible, extend the protections of the BAA to the PHI and limit further uses and disclosures to those purposes that make the return or destruction infeasible.
+ 
+ **Compliant pattern:**
+-- Return or destruction at termination, at the covered entity's option.
+-- Explicit handling of the "not feasible" case (continued protection of remaining PHI).
++- Return or destruction at termination, at the covered entity's option, with no copies retained.
++- Explicit handling of the "not feasible" case (continued protection of remaining PHI, with further uses and disclosures limited to the purposes that make return or destruction infeasible).
+ - Certification of destruction on request.
+ 
+ **Common deficiencies:**
+@@ -180,14 +192,13 @@ The HIPAA Privacy Rule prescribes specific contract terms for BAAs at 45 CFR §1
+ 
+ **Source:** 45 CFR §164.504(e)(2)(iii).
+ 
+-**Required:** The BAA must authorize termination by the covered entity if the business associate violates a material term of the agreement.
++**Required:** The BAA must authorize termination by the covered entity if the covered entity determines that the business associate has violated a material term of the agreement.
+ 
+ **Compliant pattern:**
+-> "If Business Associate has violated a material term of this Agreement, Covered Entity may terminate this Agreement upon notice. If termination is not feasible, Covered Entity shall report the violation to the Secretary of Health and Human Services."
++> "If Covered Entity determines that Business Associate has violated a material term of this Agreement, Covered Entity may terminate this Agreement upon notice."
+ 
+ **Common deficiencies:**
+ - Termination right limited to "material breach not cured within X days" without considering that some violations cannot be cured.
+-- No reference to reporting obligation if termination is not feasible.
+ 
+ ## HITECH and Omnibus Rule additions
+ 
+@@ -195,7 +206,7 @@ The 2009 HITECH Act and the 2013 HIPAA Omnibus Rule added:
+ 
+ ### Direct business-associate liability
+ 
+-Business associates are now directly liable for HIPAA compliance, not just through their BAAs. The BAA does not need to recite this (it is a matter of law), but it should not contradict it. Common deficiencies:
++Business associates are now directly liable under the HIPAA Rules, not just through their BAAs, for impermissible uses and disclosures, failure to notify the covered entity of a breach, failure to comply with the Security Rule, and the other obligations HHS listed in the Omnibus Rule (78 FR 5591 and 5598 to 5599); they remain contractually liable for the BAA's other terms. The BAA does not need to recite this (it is a matter of law), but it should not contradict it. Common deficiencies:
+ 
+ - BAA limiting BA's liability to the BAA itself, with disclaimer of HIPAA-direct-liability — flag as critical.
+ - BAA suggesting BA is exempt from direct enforcement — flag as critical.
+@@ -206,16 +217,16 @@ HITECH restricts marketing communications using PHI without authorization. The B
+ 
+ ### Subcontractor BAAs
+ 
+-As covered above (item 6) — HITECH formalized the sub-BAA requirement. Pre-HITECH BAAs may lack this and need updating.
++As covered above (item 6). The 2013 Omnibus Rule formalized the sub-BAA requirement (45 CFR §164.502(e)(1)(ii)); BAAs drafted before it may lack this and need updating.
+ 
+ ## Severity calibration for HIPAA BAAs
+ 
+ - **Critical:** Missing breach notification mechanism; missing safeguards / Security Rule reference; missing material-term reporting; missing flow-down to subcontractors; permitted uses too broad to comply with HIPAA.
+-- **Material:** Timeline gaps (breach notification "without undue delay"); incomplete accounting-of-disclosures provisions; missing subcontractor list; no termination-for-breach right.
++- **Material:** Timeline gaps (breach notification "without unreasonable delay" with no specific timeline); incomplete accounting-of-disclosures provisions; missing subcontractor list; no termination-for-breach right.
+ - **Minor:** Outdated CFR citations; drafting issues; recital-level deficiencies.
+ 
+ ## Special situations
+ 
+ - **Cloud service provider as business associate:** OCR has issued guidance that cloud service providers are business associates if they process PHI. The fact that the CSP cannot read encrypted PHI does not relieve the BA obligation. BAAs covering CSP relationships should address: storage location (relevant to OCR enforcement priorities), encryption key management (does CSP hold keys?), incident response in CSP's environment.
+-- **Hybrid HIPAA / state privacy:** Many BAA situations also involve state privacy laws (e.g., California consumer health data has CCPA implications independent of HIPAA). A BAA does not satisfy state privacy law requirements; the user may need both a BAA and a state-privacy DPA, or a combined instrument that addresses both regimes.
++- **Hybrid HIPAA / state privacy:** Many BAA situations also involve state privacy laws. The CCPA does not apply to medical information governed by the California Confidentiality of Medical Information Act or to protected health information collected by a covered entity or business associate governed by HIPAA (Cal. Civ. Code §§1798.145(c)(1)(A), 1798.146(a)(1)), nor to a health care provider governed by that Act or a HIPAA covered entity to the extent it maintains patient information in the same manner as medical information or protected health information (§1798.145(c)(1)(B); see also §1798.146(a)(2)), nor to a HIPAA business associate to the extent it maintains, uses, and discloses patient information in that manner (§1798.146(a)(3)); it can apply to other personal information the parties process, including health data outside the exemptions in those sections. A BAA does not satisfy state privacy law requirements; the user may need both a BAA and a state-privacy DPA, or a combined instrument that addresses both regimes.
+ - **Subcontractor BAAs:** When the user is a business associate engaging a subcontractor, the substantive requirements are identical, but the parties' roles and obligations references may use "Business Associate" and "Subcontractor" terminology. Flag clearly in the report.
